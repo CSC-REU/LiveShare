@@ -53,7 +53,7 @@ io.sockets.on('connection', socket => {
                     else return false;
                 });
 
-        if(roomsSocketsIds > 1) {
+        if(roomsSocketsIds.length > 0) {
             roomsSockets.get(roomsSocketsIds[0]).emit('userconnect', justJoinedId);
             console.log('filtered array of ids', roomsSocketsIds);
         }

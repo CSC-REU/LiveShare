@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 
@@ -7,10 +7,17 @@ import { useParams } from 'react-router-dom';
 
 
 function SharedTextarea(props) {
-  const [value, setValue] = useState('');
+  const [value, _setValue] = useState('');
   const [socket, setSocket] = useState();
   //const [newVal, setNewVal] = useState('');
   const { room } = useParams();
+
+  const valueRef = useRef(value);
+  const setValue = (data) => {
+    valueRef.current = data;
+    _setValue(data);
+  }
+
   useEffect(() => {
     let host = window.location.hostname;
     if (host === "localhost") host += ":3001";
@@ -43,11 +50,12 @@ function SharedTextarea(props) {
 
     s.emit('join-textarea', room);
 
+    // note: https://file-translate.com/en/blog/react-state-in-event
     //Gets the value and sends it to the new state it received
     s.on('userconnect', (justJoinedId) => {
       // setValue(value);
-      s.emit('existingvalue', {giveValueToThisId: justJoinedId, value});
-      console.log('emitting existing value', value);
+      s.emit('existingvalue', {giveValueToThisId: justJoinedId, value: valueRef.current});
+      console.log('emitting existing value', valueRef.current);
       
       //console.log('User has joined. obtained old value');
     });
