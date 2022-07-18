@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
 
-function SharedTextarea(props) {
+function SharedTextarea() {
   const [value, _setValue] = useState('');
   const [socket, setSocket] = useState();
   const { room } = useParams();
