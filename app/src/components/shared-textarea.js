@@ -1,40 +1,39 @@
 import { useState, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
 import { useParams } from 'react-router-dom';
+const host = (window.location.hostname === "localhost") ? `${window.location.hostname}:3001` : window.location.hostname
 
 function SharedTextarea() {
-  const [value, _setValue] = useState('');
+  const [text, setText] = useState('');
   const [socket, setSocket] = useState();
-  const { room } = useParams();
-
-  const valueRef = useRef(value);
-  const setValue = (data) => {
-    valueRef.current = data;
-    _setValue(data);
-  }
+  const {room} = useParams();
+  const previousText = useRef('');
 
   useEffect(() => {
-    let host = window.location.hostname;
-    if (host === "localhost") host += ":3001";
-    const s = io(host, { transports: ['websocket'], secure: true });
-    s.emit('join-textarea', room);
-    s.on('userconnect', (justJoinedId) => {
-      s.emit('existingvalue', {giveValueToThisId: justJoinedId, value: valueRef.current});
-      console.log('emitting existing value', valueRef.current);
+    const client = io(host, {transports: ['websocket'], secure: true});
+
+    client.emit('join-textarea', room);
+
+    client.on('userconnect', userId => {
+      client.emit('previous-text', {userId: userId, previousText: previousText.current})
     });
-    s.on('textarea', (v) => {
-      setValue(v);
+
+    client.on('text', text => {
+      previousText.current = text
+      setText(text);
     });
-    setSocket(s);
+    
+    setSocket(client);
   }, []);
 
   function onChangeHandler(e) {
-    setValue(e.target.value); 
-    socket.emit('textarea', e.target.value)
+      setText(e.target.value)
+      previousText.current = text
+      socket.emit('text', e.target.value)
   }
 
   return (
-    <textarea onChange={onChangeHandler} value={value} />
+    <textarea value={text} onChange={onChangeHandler}/>
   );
 }
 
