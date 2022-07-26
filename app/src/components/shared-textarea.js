@@ -14,21 +14,14 @@ function SharedTextarea() {
 
     client.emit('join-textarea', room);
 
-    client.on('userconnect', userId => {
-      client.emit('previous-text', {userId: userId, previousText: previousText.current})
-    });
-
-    client.on('text', text => {
-      previousText.current = text
-      setText(text);
-    });
+    client.on('text', text => {setText(text)});
     
     setSocket(client);
   }, []);
 
   function onChangeHandler(e) {
       setText(e.target.value)
-      previousText.current = text
+      previousText.current = e.target.va
       socket.emit('text', e.target.value)
   }
 
