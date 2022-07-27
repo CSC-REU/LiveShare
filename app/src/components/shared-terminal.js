@@ -17,6 +17,10 @@ function SharedTerminal() {
 
     const terminal = new Terminal()
     
+    client.on('terminal-history', (history) => {
+      terminal.write(history);
+    })
+
     if (!active) {
       terminal.open(previousTerminal.current) 
       setActive(true)
@@ -24,7 +28,7 @@ function SharedTerminal() {
     
     terminal.onData(data => {client.emit('stdin', data)})
 
-    client.on('stdout', data => {terminal.write(data)})
+    client.on('stdo', data => {terminal.write(data)})
   }, []);
 
   return (

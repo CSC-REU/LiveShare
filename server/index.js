@@ -5,6 +5,9 @@ const io = socket(server, { transports: ['websocket'] });
 const users = {}
 const pty = require('node-pty');
 let terminalPtys = {};
+let terminals = {};
+const { Terminal } = require('xterm-headless');
+const { SerializeAddon } = require("xterm-addon-serialize");
 
 io.sockets.on('connection', socket => {
     socket.on('join-textarea', async (room) => {
@@ -32,6 +35,15 @@ io.sockets.on('connection', socket => {
         });
     });
     socket.on('join-terminal', (room) => {
+        if (terminals[room]) {
+            console.log('restoring history...');
+            socket.emit('terminal-history', terminals[room].serializer.serialize());
+            // console.log(terminals[room].serializer.serialize());
+        }
+        if(!terminals[room]) {
+            terminals[room] = {terminal: new Terminal(), serializer: new SerializeAddon()};
+            terminals[room].terminal.loadAddon(terminals[room].serializer);
+        }
         if (!terminalPtys[room]) {
             const ptyProcess = pty.spawn(this.command, this.args || [], {
                 name: 'xterm-color',
@@ -39,11 +51,9 @@ io.sockets.on('connection', socket => {
             });
             ptyProcess.onData((output) => {
                 socket.in(room).emit('stdo', output);
+                terminals[room].terminal.write(output);
             });
             terminalPtys[room] = ptyProcess;
-        }
-        else {
-            terminalPtys[room].write('clear\n');
         }
         socket.leaveAll();
         socket.join(room);

@@ -12,7 +12,9 @@
   "license": "Apache-2.0",
   "dependencies": {
     "node-pty": "^0.10.1",
-    "socket.io": "^4.4.1"
+    "socket.io": "^4.4.1",
+    "xterm-addon-serialize": "^0.7.0",
+    "xterm-headless": "^4.19.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
